@@ -1,0 +1,32 @@
+- name: Configure network for router
+  hosts: "{{ hostvars['localhost']['router_hosts'] | default([]) }}"
+  tasks:
+    - name: Debug router_hosts
+      ansible.builtin.debug:
+        var: hostvars['localhost']['router_hosts']
+    - name: Apply router role
+      ansible.builtin.include_role:
+        name: router
+      when: inventory_hostname in hostvars['localhost']['router_hosts'] | default([])
+
+- name: Configure network and DB
+  hosts: "{{ hostvars['localhost']['db_hosts'] | default([]) }}"
+  tasks:
+    - name: Debug db_hosts
+      ansible.builtin.debug:
+        var: hostvars['localhost']['db_hosts']
+    - name: Apply db role
+      ansible.builtin.include_role:
+        name: db
+      when: inventory_hostname in hostvars['localhost']['db_hosts'] | default([])
+
+- name: Configure network for client
+  hosts: "{{ hostvars['localhost']['client_hosts'] | default([]) }}"
+  tasks:
+    - name: Debug client_hosts
+      ansible.builtin.debug:
+        var: hostvars['localhost']['client_hosts']
+    - name: Apply client role
+      ansible.builtin.include_role:
+        name: client
+      when: inventory_hostname in hostvars['localhost']['client_hosts'] | default([])

@@ -1,0 +1,143 @@
+---
+- name: Distribute roles and configure network
+  hosts: all
+  gather_facts: yes
+  vars_files:
+    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+
+  tasks:
+    - name: Debug Python version
+      ansible.builtin.command: "{{ ansible_python_interpreter }} --version"
+      register: python_version
+      changed_when: false
+
+    - name: Show Python version
+      ansible.builtin.debug:
+        var: python_version.stdout
+
+    - name: Collect server load
+      ansible.builtin.command: cat /proc/loadavg
+      register: loadavg
+      changed_when: false
+
+    - name: Debug loadavg
+      ansible.builtin.debug:
+        var: loadavg.stdout
+
+- name: Determine server roles and group membership
+  hosts: all
+  gather_facts: no
+  vars_files:
+    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+  tasks:
+    - name: Initialize server_loads on localhost
+      delegate_to: localhost
+      run_once: true
+      set_fact:
+        server_loads: {}
+
+    - name: Aggregate server loads on localhost
+      delegate_to: localhost
+      run_once: true
+      set_fact:
+        server_loads: "{{ server_loads | combine({ item: hostvars[item].loadavg.stdout.split()[0] | float }) }}"
+      loop: "{{ ansible_play_hosts }}"
+
+    - name: Debug server_loads
+      delegate_to: localhost
+      run_once: true
+      debug:
+        var: server_loads
+
+    - name: Sort hosts by load (descending)
+      delegate_to: localhost
+      run_once: true
+      set_fact:
+        sorted_hosts: "{{ server_loads | dict2items | sort(attribute='value', reverse=true) | map(attribute='key') | list }}"
+
+    - name: Debug sorted_hosts
+      delegate_to: localhost
+      run_once: true
+      debug:
+        var: sorted_hosts
+
+    - name: Add router host
+      delegate_to: localhost
+      run_once: true
+      add_host:
+        name: "{{ sorted_hosts[0] }}"
+        groups: router_hosts
+
+    - name: Add db host
+      delegate_to: localhost
+      run_once: true
+      add_host:
+        name: "{{ sorted_hosts[1] }}"
+        groups: db_hosts
+
+    - name: Define trusted IPs (excluding DB)
+      set_fact:
+        trusted_ips: >-
+          {{ groups['all'] | difference(groups['db_hosts']) |
+             map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}
+      run_once: true
+
+    - name: Add client host
+      delegate_to: localhost
+      run_once: true
+      add_host:
+        name: "{{ sorted_hosts[2] }}"
+        groups: client_hosts
+
+    - name: Debug role assignments
+      delegate_to: localhost
+      run_once: true
+      debug:
+        msg: "router: {{ groups['router_hosts'] }}, db: {{ groups['db_hosts'] }}, client: {{ groups['client_hosts'] }}"
+
+    - name: Fail if any group is empty
+      delegate_to: localhost
+      run_once: true
+      fail:
+        msg: "One or more host groups are empty!"
+      when: >
+        groups['router_hosts'] | length == 0 or
+        groups['db_hosts'] | length == 0 or
+        groups['client_hosts'] | length == 0
+
+- name: Configure network for router
+  hosts: router_hosts
+  gather_facts: yes
+  vars_files:
+    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+  roles:
+    - router
+
+- name: Configure network and DB
+  hosts: db_hosts
+  gather_facts: yes
+  vars_files:
+    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+  roles:
+    - db
+
+- name: Configure network for client
+  hosts: client_hosts
+  gather_facts: yes
+  vars_files:
+    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+  roles:
+    - client
+
+
+- hosts: router_hosts
+  become: yes
+  tasks:
+    - name: Restrict access to port 8529 to IP router only
+      ansible.builtin.iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: 8529
+        source: 10.0.1.2
+        jump: ACCEPT
+

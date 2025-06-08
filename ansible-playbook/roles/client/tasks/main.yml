@@ -1,0 +1,33 @@
+---
+- name: Debug client role
+  ansible.builtin.debug:
+    msg: "Applying client role on {{ inventory_hostname }}"
+
+- name: Gather facts for network configuration
+  ansible.builtin.setup:
+    filter: ansible_os_family
+
+- name: Set network_config_path
+  ansible.builtin.set_fact:
+    network_config_path: /etc/systemd/network/
+
+- name: Debug network variables
+  ansible.builtin.debug:
+    msg: |
+      network_config_path: {{ network_config_path | default('undefined') }}
+      lan_interface: {{ lan_interface | default('undefined') }}
+      wan_interface: {{ wan_interface | default('undefined') }}
+      ansible_os_family: {{ ansible_os_family | default('undefined') }}
+      network_ips.client: {{ network_ips.client | default('undefined') }}
+
+- name: Configure LAN interface for systemd-networkd
+  ansible.builtin.template:
+    src: network_interface.network.j2
+    dest: "{{ network_config_path }}/20-lan-{{ lan_interface }}.network"
+    mode: '0644'
+  notify: Restart systemd-networkd
+  vars:
+    interface_name: "{{ lan_interface }}"
+    ip_address: "{{ network_ips.client }}"
+    netmask: "255.255.255.0"
+    state: up

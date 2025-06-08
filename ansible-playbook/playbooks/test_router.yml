@@ -1,0 +1,7 @@
+---
+- name: Test router role
+  hosts: host3  # или rtr.localdomain, если не обновили имена
+  tasks:
+    - name: Apply router role
+      ansible.builtin.include_role:
+        name: router

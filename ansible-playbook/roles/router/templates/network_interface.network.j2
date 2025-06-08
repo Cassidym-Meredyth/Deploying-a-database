@@ -1,0 +1,9 @@
+[Match]
+Name={{ interface_name }}
+
+[Network]
+{% if ip_address == 'dhcp' %}
+DHCP=ipv4
+{% else %}
+Address={{ ip_address }}/24
+{% endif %}
