@@ -10,13 +10,13 @@
 Команда для клонирования репозитория:
 
 ```
-git clone https://gitlab.com/vlasovdany2004-group/vlasovdany2004-project.git
-cd путь_директории/vlasovdany2004-projectmain/ansible-playbook/
+git clone https://github.com/Cassidym-Meredyth/Deploying-a-database.git
+cd путь_директории/Deploying-a-database/ansible-playbook
 ```
 
 Структура проекта:
 ```
-/путь_до_директории/vlasovdany2004-project-main/ansible-playbook/
+/путь_до_директории/Deploying-a-database/ansible-playbook/
 ├── ansible.cfg
 ├── group_vars
 │   └── all.yml
@@ -55,7 +55,7 @@ cd путь_директории/vlasovdany2004-projectmain/ansible-playbook/
 Команда для запуска плейбуков
 
 ```
-ansible-playbook -i /путь_до_директории/vlasovdany2004-project/ansible-playbook/inventory/hosts.yml /путь_до_директории/vlasovdany2004-project/ansible-playbook/playbooks/main.yml --flush-cache
+ansible-playbook -i /путь_до_директории/Deploying-a-database/ansible-playbook//inventory/hosts.yml /путь_до_директории/Deploying-a-database/ansible-playbook/playbooks/main.yml --flush-cache
 ```
 
 Приложение будет доступно по адресу:
