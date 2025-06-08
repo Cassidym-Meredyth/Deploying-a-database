@@ -10,7 +10,7 @@
 Команда для клонирования репозитория:
 
 ```
-git clone https://gitlab.com/vlasovdany2004-group/vlasovdany2004-project.git
+git clone https://github.com/Cassidym-Meredyth/Deploying-a-database.git
 cd путь_директории/Deploying-a-database/ansible-playbook/
 ```
 
