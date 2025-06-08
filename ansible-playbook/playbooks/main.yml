@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: yes
   vars_files:
-    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+    - group_vars/all.yml
 
   tasks:
     - name: Debug Python version
@@ -28,7 +28,7 @@
   hosts: all
   gather_facts: no
   vars_files:
-    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+    - group_vars/all.yml
   tasks:
     - name: Initialize server_loads on localhost
       delegate_to: localhost
@@ -109,7 +109,7 @@
   hosts: router_hosts
   gather_facts: yes
   vars_files:
-    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+    - group_vars/all.yml
   roles:
     - router
 
@@ -117,7 +117,7 @@
   hosts: db_hosts
   gather_facts: yes
   vars_files:
-    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+    - group_vars/all.yml
   roles:
     - db
 
@@ -125,7 +125,7 @@
   hosts: client_hosts
   gather_facts: yes
   vars_files:
-    - /root/vlasovdany2004-project/ansible-playbook/group_vars/all.yml
+    - group_vars/all.yml
   roles:
     - client
 
